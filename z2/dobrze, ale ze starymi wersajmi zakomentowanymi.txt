@@ -1,0 +1,269 @@
+# Adam Misztal
+# Dopisek:
+# W moim kodzie użyłem algorytmów, które były pokazane na ćwiczeniach oraz wykładach, lub podobnych, które lekko
+# zmodyfikowałem. Pozostała, część jest napisana przeze mnie.
+# Opis algorytmu:
+# Zacznę od wyjaśnienia odnośnie zmiany listy list na listę krotek. Gdzieś kiedyś czytałem, że krotki dużo szybciej
+# zwracają wartości niż listy, a samo comprehension w pythonie jest również szybkie, więc ta zmaiana przynosi korzystne
+# rezultaty w przypadku szybkości wykonywania się mojego algorytmu.
+# Algorym składa się z 2 głownych etapów: 1 posortwanie listy niemalejąco po początkach przedziałów, a dla wartości
+# sobie równych ustawnienie najpierw największego końca przedziału (tylko to ma znaczenie reszta nie musi być
+# posortowana) 2. sprawdzenie poziomów tych przedziałów które nie są jeszcze w niczym zawarte
+# sortowanie wykonuje quicksortem, który dzieli talbicę na 3 (na wykładzie chyba było powiedziane, że nazywa się to
+# quicker sort, ale nie jestem pewny, bo sam wymyślałem, ten algorym), więc działanie dla większych i mniejszych
+# oczywiste. Dla równych za to używam algorymtu który pojawił się na ćwiczeniach. Wyszukuje on wartość największego
+# końca przedziału w czasie 0.5 N, bo sprawdzamy 2 wyrazy sąsiedznie i większy przyrównujemy do naszego aktualnego
+# maksimum. Później zamieniam element pierwszy spośród tych które mają ten sam początek przedziału, z tym który ma
+# największą wartość końca przedziału. Zamysł jest taki, że jeśli będę sprawdzał co zawiera w sobie jakiś przedział, to
+# zacznę od pierwszego, a jeśli pierwszy jest największy to automatycznie zawiera wszystkie pozostałe przedziały,
+# które rozpoczynają się tą samą wartością, pozwoli mi to uniknąć jednego warunku w ifie w kodzie i ułatwi całe zadanie.
+# w samym quicksorcie używam while, ponieważ dzięki temu używam mniej pamięci jak i cały kod wykonuje się szybciej
+# Etap drugi działa w sposób następujący, rozpoczynam zliczanie wartości k (k=poziom danego przedziału), przy czym,
+# zwracam też pierwszy przedział, który nie jest zawarty w sprawdzanym (ten będę sprawdzał następnie). Dzięki temu
+# ukniknę sprawdzania k dla przedziałów które są w czymś zarate, bo ich k jest na pewno mniejsze od k przedziału w
+# którym są zawarte, a nas interesuje tylko największe spośród k. Wykonujemy ten krok dopóki istnieje przedział który
+# nie jest zawarty w poprzednim. Sprawdzamy oczywiście tylko dalsze przedziały, po to są posortwane, np przedział
+# [2,5] (zakładamy, że to jednyny który zaczyna się od 2 na potrzeby przykładu), nie będzie zawierał żadnego który jest
+# w posortowanej liście przed nim, bo 2 < od czegkolwiek mniejszego (oczywsite). Dlatego algorym dla każdego kolejnego
+# przedziału dla którego szukamy k wykonuje się coraz mniej razy.
+# Złożoność:
+# Złożonośc optymistyczyna tego algorymtu to n(logn + 1), ponieważ quicksort działa w złożoności nlog n, a jeżeli lista
+# zawiera przedział który zawiera w sobie wszystkie pozostałe to będzie on pierwszym elementem posortwanej listy, więc
+# dalsza część algorymu ograniczy się do wyliczenia k dla pierszego elementu i pętla while nie będzie się dalej
+# wykonywać.
+# Złożoność średnia tego algorymtu to c2n(logn) (c to jakaś stała), bo w drugiej części algorytmu pętla while wykonuje
+# się log n razy a zawarte w niej instrukcje przynajmniej raz (dla pierwszego elementu ta długość wynosi n, dla
+# kolejnego n-1 itd), więc skoro wykona się tylko kilka razy i za każdym razem krócej to będzie to więcej niż n ale
+# mniej niż n^2
+# Złożoność pesymistyczna: quickosrt wykona się w n^2 i druga część algorymu w n*(n+1)/2. Wtedy otrzymujemy łączną
+# złożoność 1.5*n^2 + 0.5*n, jednak szanse na taki przypadek są minimalne, a sama stałą przy n^2 jest nieduża.
+# n*(n+1)/2 ponieważ n razy wykonanmy pętle o długości (n, n-1, n-2, ..., 1) z sumy ciągu arytmetycznego otrzymujemy
+# taki wynik. Taki przypadek może zdażyć się dla listy gdzie wszystkie przedziały nie zawierają się w sobie nawzajem
+# W rzeczywistości najczęstrzym przypadkiem jest przypadek średni. Szanse na optymistyczny i pesymistyczny są niewielkie
+# dlatego wnioskuje, że sam algorym jest optymalny.
+from zad2testy import runtests
+
+
+# def depth(L):
+#     # tu prosze wpisac wlasna implementacje
+#     pass
+
+# funkcja odpowiadająca, za ułożenie listy na zasadzie [   <x   ,   =x   ,   >x   ] gdzie i wskazauje na ostatni
+# element <x, a k na ostatni element =x (to k nie ma połącznie z k o którym pisałem w opisie oznaczającym poziom,
+# tutaj to zwykła zmienna, zbierzność nazw)
+def moving(L: list, l: int, r: int):
+    x = L[r][0]
+    i = l - 1
+    k = i
+    for j in range(l, r):
+        if L[j][0] < x:
+            i += 1
+            k += 1
+            L[k], L[j] = L[j], L[k]
+            L[i], L[k] = L[k], L[i]
+        elif L[j][0] == x:
+            k += 1
+            L[k], L[j] = L[j], L[k]
+
+    L[k + 1], L[r] = L[r], L[k + 1]
+    return i + 1, k + 1
+
+
+# def sort_same_partitions(L: list, l: int, r: int):
+#     anyChanges = True
+#     while anyChanges:
+#         anyChanges = False
+#         for i in range(l, r):
+#             if L[i][1] < L[i + 1][1]:
+#                 L[i], L[i + 1] = L[i + 1], L[i]
+#                 anyChanges = True
+
+
+# pojedyncy bubble
+# def sort_same_partitions(L: list, l: int, r: int):
+# for i in range(r - 1, l - 1, -1):
+#     if L[i][1] < L[i + 1][1]:
+#         L[i], L[i + 1] = L[i + 1], L[i]
+
+# inny algorym
+
+# szukanie maksymalnego końca przedziału
+# algorym sprawdza co drugie elementy i większy porównuje z aktualnym max
+def sort_same_partitions(L: list, l: int, r: int):
+    max_val = (L[r][1], r)
+    for i in range(l, r, 2):
+        checking_1 = L[i][1]
+        checking_2 = L[i + 1][1]
+        if checking_1 <= checking_2:
+            if max_val[0] < checking_2:
+                max_val = (checking_2, i + 1)
+        else:
+            if max_val[0] < checking_1:
+                max_val = (checking_1, i)
+    L[l], L[max_val[1]] = L[max_val[1]], L[l]
+
+
+# def quickSort(L: list, l, r):
+#     if l < r:
+#         q, q2 = moving(L, l, r)
+#         quickSort(L, l, q - 1)
+#         sort_same_partitions(L, q, q2)
+#         quickSort(L, q2 + 1, r)
+
+
+# lekko zmodyfikowany quicksort z wykładu
+def quickSort(L: list, l, r):
+    while l < r:
+        q, q2 = moving(L, l, r)
+        quickSort(L, l, q - 1)
+        sort_same_partitions(L, q, q2)
+        l = q2 + 1
+
+
+# to ok \/
+
+# def including(L, start, Cheked_list):
+#     k = 0
+#     for j in range(start + 1, len(L)):
+#         if L[start][1] >= L[j][1]:
+#             k += 1
+#             Cheked_list[j] = True
+#     return k
+#
+#
+# def find_level(L, Cheked_list):
+#     i = 0
+#     prev = 1000000
+#     max_k = 0
+#     for j in range(len(L)):
+#         actual = L[j][0]
+#         if actual != prev and not Cheked_list[j]:
+#             k = including(L, j, Cheked_list)
+#             i += 1
+#             prev = actual
+#             if k > max_k:
+#                 max_k = k
+#     return max_k
+#
+#
+# def depth(L):
+#     L = [(i[0], i[1]) for i in L]
+#     quickSort(L, 0, len(L) - 1)
+#     Cheked_list = [False for _ in range(len(L))]
+#     return find_level(L, Cheked_list)
+
+
+# dodatek
+
+# def including(L, start):
+#     k = 0
+#     for j in range(start + 1, len(L)):
+#         checking = L[j]
+#         if L[start][1] >= checking[1]:
+#             k += 1
+#             L[j] = (False, checking[1])
+#     return k
+#
+#
+# def find_level(L):
+#     prev = 1000000
+#     max_k = 0
+#     for j in range(len(L)):
+#         actual = L[j][0]
+#         if actual is not False and actual != prev:
+#             k = including(L, j)
+#             prev = actual
+#             if k > max_k:
+#                 max_k = k
+#     return max_k
+#
+#
+# def depth(L):
+#     L = [(i[0], i[1]) for i in L]
+#     quickSort(L, 0, len(L) - 1)
+#     return find_level(L)
+
+# równie dobyr plan
+
+# funckja znajdująca nasze k(poziom przedziału). Pierwszy while szuka przedziału który jako kolejny sprawdzimy. Jest 
+# to pierwszy przedział który nie jest zawarty w aktualnym. Dzięki temu nie ominiemy, żadnego, ale i nie będziemy 
+# sprawdzać niepotrzebnych. Potem dokańczam liczenie k forem bo jest to szybsze
+def including(L, start):
+    k = 0
+    j = start + 1
+    length = len(L)
+    while j < length and L[start][1] >= L[j][1]:
+        j += 1
+        k += 1
+    next_move = j
+    j += 1
+    for i in range(j, length):
+        if L[start][1] >= L[i][1]:
+            k += 1
+    return k, next_move
+
+
+# funkcja znajduje największy poziom w liście przedziałów
+# while wykonuje się dla next_move zwracanych przez funckje including, dzięki temu wynokuje się dużo mniej razy
+# i nie sprawdza też niepotrzebnie jakichś warunków
+def find_level(L):
+    max_k = 0
+    j = 0
+    while j < len(L):
+        k, next_move = including(L, j)
+        if k > max_k:
+            max_k = k
+        j = next_move
+    return max_k
+
+
+# opcja z forem chyba troche wolniejsza
+# def find_level(L):
+#     max_k = 0
+#     next_move = 0
+#     for i in range(len(L)):
+#         if i == next_move:
+#             k, next_move = including(L, i)
+#             if k > max_k:
+#                 max_k = k
+#     return max_k
+
+# comprehension zamieniające liste list na liste korotek. Powód tej optymalizacji kodu opisałem na początku
+# wywołanie quicksorta (etap 1 sortowanie)
+# zwrócenie wyniku z etapu 2 który wykonuje się w find_level
+def depth(L):
+    L = [(i[0], i[1]) for i in L]
+    quickSort(L, 0, len(L) - 1)
+    return find_level(L)
+
+
+# # rekurencyjnie
+# def including(L, start):
+#     length = len(L)
+#     if start == length:
+#         return 0
+#     k = 0
+#     j = start + 1
+#     start_val = L[start][1]
+#     while j < length and start_val >= L[j][1]:
+#         j += 1
+#         k += 1
+#     k2 = including(L, j)
+#     j += 1
+#     for i in range(j, length):
+#         if start_val >= L[i][1]:
+#             k += 1
+#     if k > k2:
+#         return k
+#     return k2
+
+
+# comprehension zamieniające liste list na liste korotek. Powód tej optymalizacji kodu opisałem na początku
+# wywołanie quicksorta (etap 1 sortowanie)
+# zwrócenie wyniku z etapu 2 który wykonuje się w find_level
+# def depth(L):
+#     L = [(i[0], i[1]) for i in L]
+#     quickSort(L, 0, len(L) - 1)
+#     return including(L, 0)
+
+runtests(depth)

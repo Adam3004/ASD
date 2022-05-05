@@ -1,0 +1,112 @@
+# def g(T):
+#     max_c = 0
+#     for elem in T:
+#         counter = 0
+#         for elem2 in T:
+#             if elem == elem2 or elem == elem2[::-1]: counter += 1
+#         if counter > max_c:
+#             max_c = counter
+#     return max_c
+
+# def g(T):
+#     return findStrongestWord(radixSort(T))
+#
+#
+# def create_Table(T):
+#     n = len(T)
+#     T2 = [None for _ in range(n * 2)]
+#     for i in range(n):
+#         T2[i] = T[i]
+#         T2[n + i] = T[i][::-1]
+#     return T2
+#
+#
+# def countingSort(T2, ind):
+#     n = len(T2)
+#     B = [None for _ in range(n)]
+#     C = [0 for _ in range(26)]
+#     D = [None for _ in range(n)]
+#     for i in range(n):
+#         checking = T2[i]
+#         if len(checking) >= abs(ind):
+#             C[ord(checking[ind]) - 97] += 1
+#     for i in range(1, 26):
+#         C[i] += C[i - 1]
+#     j = 0
+#     for i in range(n - 1, -1, -1):
+#         checking = T2[i]
+#         if len(checking) >= abs(ind):
+#             B[C[ord(checking[ind]) - 97] - 1] = checking
+#             C[ord(checking[ind]) - 97] -= 1
+#         else:
+#             D[j] = checking
+#             j += 1
+#     j2 = 0
+#     while j2 < j:
+#         T2[j2] = D[j2]
+#         j2 += 1
+#     for i in range(n):
+#         if B[i] is not None:
+#             T2[j2] = B[i]
+#             j2 += 1
+#     return T2
+#
+#
+# def findMaxLen(T):
+#     max_len = 0
+#     for i in range(len(T)):
+#         checking_len = len(T[i])
+#         if checking_len > max_len:
+#             max_len = checking_len
+#     return max_len
+#
+#
+# def radixSort(T):
+#     T2 = create_Table(T)
+#     max_len = findMaxLen(T)
+#     for i in range(1, max_len + 1):
+#         T2 = countingSort(T2, i * (-1))
+#     return T2
+#
+#
+# def findStrongestWord(T2):
+#     i = 0
+#     n = len(T2)
+#     max_strenght = 0
+#     while i < n-1:
+#         j = i
+#         counter = 1
+#         while j < n-1 and T2[j] == T2[j + 1]:
+#             counter += 1
+#             j += 1
+#         max_strenght = max(max_strenght, counter)
+#
+#         if i == j:
+#             i += 1
+#         else:
+#             i=j
+#
+#     return max_strenght
+
+
+
+
+
+
+# def partition(T, l, p):
+#     x = T[p][1]
+#     ind = l - 1
+#     for i in range(l, p):
+#         if T[i][1] <= x:
+#             ind += 1
+#             T[i], T[ind] = T[ind], T[i]
+#
+#     T[ind + 1], T[p] = T[p], T[ind + 1]
+#     return ind + 1
+#
+#
+# def quickSort(T, l, p):
+#     while l < p:
+#         q = partition(T, l, p)
+#         quickSort(T, l, q - 1)
+#         l = q + 1
